@@ -52,6 +52,20 @@ func (q *Queries) CreateOrderItem(ctx context.Context, arg CreateOrderItemParams
 	return i, err
 }
 
+const decreaseProductStock = `-- name: DecreaseProductStock :exec
+UPDATE products SET quantity = quantity - $1 WHERE id = $2 AND quantity > 0
+`
+
+type DecreaseProductStockParams struct {
+	Quantity int32 `json:"quantity"`
+	ID       int64 `json:"id"`
+}
+
+func (q *Queries) DecreaseProductStock(ctx context.Context, arg DecreaseProductStockParams) error {
+	_, err := q.db.Exec(ctx, decreaseProductStock, arg.Quantity, arg.ID)
+	return err
+}
+
 const findProductByID = `-- name: FindProductByID :one
 SELECT id, name, price_in_centers, quantity, created_at FROM products WHERE id = $1
 `

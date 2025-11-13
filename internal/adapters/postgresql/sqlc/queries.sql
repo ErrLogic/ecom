@@ -4,6 +4,9 @@ SELECT * FROM products;
 -- name: FindProductByID :one
 SELECT * FROM products WHERE id = $1;
 
+-- name: DecreaseProductStock :exec
+UPDATE products SET quantity = quantity - $1 WHERE id = $2 AND quantity > 0;
+
 -- name: CreateOrder :one
 INSERT INTO orders (
     customer_id
