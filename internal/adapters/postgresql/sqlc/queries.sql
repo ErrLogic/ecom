@@ -2,4 +2,4 @@
 SELECT * FROM products;
 
 -- name: FindProductByID :one
-SELECT * FROM products WHERE id = $1
+SELECT * FROM products WHERE id = $1;

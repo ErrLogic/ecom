@@ -1,18 +1,23 @@
 package products
 
-import "context"
+import (
+	"context"
+
+	repo "github.com/ErrLogic/ecom/internal/adapters/postgresql/sqlc"
+)
 
 type Service interface {
-	ListProducts(ctx context.Context) ([]string, error)
+	ListProducts(ctx context.Context) ([]repo.Product, error)
 }
 
 type svc struct {
+	repo repo.Querier
 }
 
-func NewService() Service {
-	return &svc{}
+func NewService(repo repo.Querier) Service {
+	return &svc{repo: repo}
 }
 
-func (s *svc) ListProducts(ctx context.Context) ([]string, error) {
-	return []string{"hello", "world"}, nil
+func (s *svc) ListProducts(ctx context.Context) ([]repo.Product, error) {
+	return s.repo.ListProducts(ctx)
 }

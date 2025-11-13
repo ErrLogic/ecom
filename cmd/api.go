@@ -6,13 +6,16 @@ import (
 	"os"
 	"time"
 
+	repo "github.com/ErrLogic/ecom/internal/adapters/postgresql/sqlc"
 	"github.com/ErrLogic/ecom/internal/products"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/jackc/pgx/v5"
 )
 
 type application struct {
 	config *config
+	db     *pgx.Conn
 }
 
 // mount
@@ -38,7 +41,7 @@ func (app *application) mount() http.Handler {
 		}
 	})
 
-	productService := products.NewService()
+	productService := products.NewService(repo.New(app.db))
 	productHandler := products.NewHandlers(productService)
 	r.Get("/products", productHandler.ListProducts)
 
@@ -73,7 +76,7 @@ func loadConfig() *config {
 	return &config{
 		addr: os.Getenv("SERVER_ADDR"),
 		db: dbConfig{
-			dsn: os.Getenv("DATABASE_DSN"),
+			dsn: os.Getenv("GOOSE_DBSTRING"),
 		},
 	}
 }
