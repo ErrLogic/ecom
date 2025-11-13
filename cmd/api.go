@@ -7,6 +7,7 @@ import (
 	"time"
 
 	repo "github.com/ErrLogic/ecom/internal/adapters/postgresql/sqlc"
+	"github.com/ErrLogic/ecom/internal/orders"
 	"github.com/ErrLogic/ecom/internal/products"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -22,15 +23,10 @@ type application struct {
 func (app *application) mount() http.Handler {
 	r := chi.NewRouter()
 
-	// A good base middleware stack
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-
-	// Set a timeout value on the request context (ctx), that will signal
-	// through ctx.Done() that the request has timed out and further
-	// processing should be stopped.
 	r.Use(middleware.Timeout(60 * time.Second))
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
@@ -41,9 +37,15 @@ func (app *application) mount() http.Handler {
 		}
 	})
 
+	// Products
 	productService := products.NewService(repo.New(app.db))
 	productHandler := products.NewHandlers(productService)
 	r.Get("/products", productHandler.ListProducts)
+
+	// Order
+	orderService := orders.NewService(repo.New(app.db), app.db)
+	orderHandler := orders.NewHandler(orderService)
+	r.Post("/orders", orderHandler.PlaceOrder)
 
 	return r
 }
